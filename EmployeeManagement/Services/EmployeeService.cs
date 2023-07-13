@@ -1,5 +1,5 @@
 using EmployeeManagement.Data;
-using EmployeeMangement.Shared;
+using EmployeeManagement.Shared;
 
 namespace EmployeeManagement.Services
 {

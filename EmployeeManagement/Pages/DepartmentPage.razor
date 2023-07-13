@@ -1,0 +1,101 @@
+@page "/DepartmentPage"
+@using static MudBlazor.CategoryTypes
+@inject MudBlazor.ISnackbar snackbar
+@inject IJSRuntime jsRuntime
+
+
+<MudCard Elevation="25">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Departments</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <EditForm OnValidSubmit="Add" Model="@department">
+            <MudTextField @bind-Value="department.DepartmentName" Label="Name Of Department"></MudTextField><br>
+            <MudButton OnClick="Add" Color="Color.Info" Variant="Variant.Filled" >Add Department</MudButton>
+        </EditForm>
+    </MudCardContent>
+</MudCard>
+<br>
+
+<MudTable Items="GetAll()" Filter="new Func<Department, bool>(Search)" @bind-department="department">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Departments</MudText>
+        <MudSpacer></MudSpacer>
+        <MudTextField @bind-Value="searchString" Placeholder="Search for Departments"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Department Name</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Department Name">@context.DepartmentName</MudTd>
+        <MudTd DataLabel="Actions">
+            <MudFab OnClick="@(()=>Update(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
+            <MudFab OnClick="@(()=>Delete(context))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small"></MudFab>
+        </MudTd>
+    </RowTemplate> 
+</MudTable>
+
+@code{
+    private string searchString="";
+    private Department department = new Department();
+    private List<Department> departments = new List<Department>();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        
+        departments = departmentService.GetAll();
+    }
+
+    private bool Search(Department department)
+    {
+        
+        if(string.IsNullOrWhiteSpace(searchString)) return true;
+        if(department.DepartmentName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private List<Department> GetAll()
+    {
+        departments = departmentService.GetAll();
+        return departments;
+    }
+
+    private void Add()
+    {
+        if (department.DepartmentId ==0)
+        {
+            departmentService.Add(department);
+            snackbar.Add("Department Added", Severity.Success);
+        }
+        else
+        {
+            departmentService.Update(department);
+            snackbar.Add("Department Updated", Severity.Success);
+        }
+        department = new Department();
+
+        GetAll();
+
+    }
+
+    private void Update(Department record)
+    {
+        department = record;
+        StateHasChanged();
+    }
+
+    private async Task Delete(Department record)
+    {
+        departmentService.Delete(record);
+        snackbar.Add("Department Deleted", Severity.Error);
+        GetAll();
+    }
+    
+}
+

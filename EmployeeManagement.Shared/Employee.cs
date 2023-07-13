@@ -1,4 +1,4 @@
-namespace EmployeeMangement.Shared
+namespace EmployeeManagement.Shared
 {
     public class Employee
     {

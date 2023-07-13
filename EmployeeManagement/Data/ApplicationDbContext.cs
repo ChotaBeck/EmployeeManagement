@@ -1,4 +1,4 @@
-using EmployeeMangement.Shared;
+using EmployeeManagement.Shared;
 using Microsoft.EntityFrameworkCore;
 
 
