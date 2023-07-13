@@ -16,4 +16,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EmployeeManagement.Shared\EmployeeManagement.Shared.csproj" />
+  </ItemGroup>
 </Project>
