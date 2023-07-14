@@ -92,9 +92,13 @@
 
     private async Task Delete(Department record)
     {
-        departmentService.Delete(record);
-        snackbar.Add("Department Deleted", Severity.Error);
-        GetAll();
+        bool confirmed = await jsRuntime.InvokeAsync<bool>("confirm","Are sure?");
+        if(confirmed)
+        {
+            departmentService.Delete(record);
+            snackbar.Add("Department Deleted", Severity.Error);
+            GetAll();
+        }
     }
     
 }

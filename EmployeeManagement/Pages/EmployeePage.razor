@@ -1,0 +1,154 @@
+@page "/employees"
+@using static MudBlazor.CategoryTypes
+@inject MudBlazor.ISnackbar snackbar
+@inject IJSRuntime jsRuntime
+@inject IDialogService DialogService
+
+
+<MudCard Elevation="25">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Employees</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <EditForm OnValidSubmit="Add" Model="@employee">
+            <MudGrid>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="employee.ManNumber" Label="Man Number"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="employee.FirstName" Label="First Name"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="employee.LastName" Label="Last Name"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="employee.OtherName" Label="Other Name"></MudTextField>
+                </MudItem>
+                 <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="employee.PhoneNumber" Label="Phone No"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="employee.NhimaNumber" Label="Nhima No"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="employee.NrcNumber" Label="NRC No"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudTextField @bind-Value="employee.SocialSecurityNumber" Label="SSN"></MudTextField>
+                </MudItem>
+                <MudItem xs="12" sm="4" md="6">
+                    <MudSelect T="int" Label="Select Department" @bind-Value="employee.DepartmentId">
+                        @foreach (var department in departments)
+                        {
+                            <MudSelectItem T="int" Value="@department.DepartmentId">@department.DepartmentName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+        
+            </MudGrid>
+            <MudButton OnClick="Add" Color="Color.Info" Variant="Variant.Filled" >Add Employee</MudButton>
+        </EditForm>
+    </MudCardContent>
+</MudCard>
+<br>
+
+<MudTable Items="GetAll()" Filter="new Func<Employee, bool>(Search)" @bind-employee="employee">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Employees</MudText>
+        <MudSpacer></MudSpacer>
+        <MudTextField @bind-Value="searchString" Placeholder="Search for Employee"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Man Number</MudTh>
+        <MudTh>First Name</MudTh>
+        <MudTh>Last Name</MudTh>
+        <MudTh>NRC No</MudTh>
+        <MudTh>Department</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Man Number">@context.ManNumber</MudTd>
+        <MudTd DataLabel="First Name">@context.FirstName</MudTd>
+        <MudTd DataLabel="Last Name">@context.LastName</MudTd>
+        <MudTd DataLabel="NRC Number">@context.NrcNumber</MudTd>
+        <MudTd DataLabel="Department Name">@context.Department.DepartmentName</MudTd> 
+        <MudTd DataLabel="Actions">
+            <MudFab OnClick="@(()=>Update(context))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small"></MudFab>
+            <MudFab OnClick="@(()=>Delete(context))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small"></MudFab>
+        </MudTd>
+    </RowTemplate> 
+</MudTable>
+
+@code{
+    private string searchString="";
+    private Department department = new Department();
+    private Employee employee = new Employee();
+    private List<Department> departments = new List<Department>();
+    private List<Employee> employees = new List<Employee>();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        
+        departments = departmentService.GetAll();
+        employees = employeeService.GetAll();
+    }
+
+    private bool Search(Employee employee)
+    {
+        
+        if(string.IsNullOrWhiteSpace(searchString)) return true;
+        if(employee.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        if(employee.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private List<Employee> GetAll()
+    {
+        employees = employeeService.GetAll();
+        return employees;
+    }
+
+    private void Add()
+    {
+        if (employee.EmployeeId ==0)
+        {
+            employeeService.Add(employee);
+            snackbar.Add("Employee Added", Severity.Success);
+        }
+        else
+        {
+            employeeService.Update(employee);
+            snackbar.Add("Employee Updated", Severity.Success);
+        }
+        employee = new Employee();
+
+        GetAll();
+
+    }
+
+    private void Update(Employee record)
+    {
+        employee = record;
+        StateHasChanged();
+    }
+
+    private async Task Delete(Employee record)
+    {
+        bool confirmed = await jsRuntime.InvokeAsync<bool>("confirm","Are sure?");
+        if(confirmed)
+        {
+            employeeService.Delete(record);
+            snackbar.Add("Employee Deleted", Severity.Error);
+            GetAll();
+        }
+    }
+    
+}
